@@ -10,8 +10,7 @@ from sklearn.metrics import accuracy_score
 import nltk
 import os
 import ssl
-
-print("running")
+print("\nstarting program...")
 # try:
 #     _create_unverified_https_context = ssl._create_unverified_context
 # except AttributeError:
