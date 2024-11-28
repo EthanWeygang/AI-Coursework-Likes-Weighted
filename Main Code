@@ -69,29 +69,28 @@ def analyze_brand_tweets():
     brand_tweets_df['stemmed_content'] = brand_tweets_df['text'].apply(stemming)
 
     # Vectorize the tweets using the same vectorizer used during training
-    X_brand_tweets = vectorizer.transform(brand_tweets_df['stemmed_content'].values)
-
-
-    likes_weights = brand_tweets_df['likes'].values # Get the likes column as array
-    converted_likes_weights = likes_weights[:, np.newaxis] # np.newaxis adds a new axis to the array, turning it from 1D to a 2D array (an array of arrays). This is required in order to use the .multiply function
-    X_brand_tweets_weighted = X_brand_tweets.multiply(converted_likes_weights) # For every vectorized tweet the corresponding likes value is multiplied, giving it more weight/ importance
-    
+    X_brand_tweets = vectorizer.transform(brand_tweets_df['stemmed_content'].values) 
 
     # Predict sentiments for brand tweets
-    predictions = loaded_model_v2.predict(X_brand_tweets_weighted) # Load the new weighted tweets into the model
+    predictions = loaded_model_v2.predict(X_brand_tweets)
     brand_tweets_df['sentiment'] = predictions
     print(predictions)
 
+    likes_per_sentiment = brand_tweets_df.groupby("sentiment")["likes"]
+    summed_likes_per_sentiment = likes_per_sentiment.sum()
+
     # Analyze the distribution of sentiments
-    sentiment_counts = pd.Series(predictions).value_counts(normalize=True) * 100
-    print(sentiment_counts)
+    total_likes = brand_tweets_df["likes"].sum()
+    positive_percentage = (summed_likes_per_sentiment.get(1, 0) / total_likes) * 100
+    neutral_percentage = (summed_likes_per_sentiment.get(2, 0) / total_likes) * 100
+    negative_percentage = (summed_likes_per_sentiment.get(0, 0) / total_likes) * 100
 
     Brand_Name = input("Enter the Brand Name: ")
 
     print(f"Sentiment Distribution for {Brand_Name}:")
-    print(f"Positive: {sentiment_counts.get(1, 0):.2f}%") 
-    print(f"Negative: {sentiment_counts.get(0, 0):.2f}%")
-    print(f"Neutral: {sentiment_counts.get(2, 0):.2f}%")
+    print(f"Positive: {positive_percentage:.2f}%") 
+    print(f"Negative: {negative_percentage:.2f}%")
+    print(f"Neutral: {neutral_percentage:.2f}%")
 
 analyze_brand_tweets()
 
@@ -115,3 +114,11 @@ if print_some_neutral_tweets == 'yes':
     print(brand_tweets_df[brand_tweets_df['sentiment'] == 2].head())
 else:
     print("Skipping printing some neutral tweets.")
+
+print_some_neutral_tweets = input("Do you want to print some high liked tweets? (yes/no): ").lower()
+if print_some_neutral_tweets == 'yes':
+    print("Some High Liked Tweets:")
+    print(brand_tweets_df.loc[brand_tweets_df["likes"].nlargest(5).index]) # locates row of tweets with top 5 highest amounts of likes
+else:
+    print("Skipping printing some high liked.")
+
