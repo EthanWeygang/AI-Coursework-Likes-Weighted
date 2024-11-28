@@ -46,16 +46,10 @@ except Exception as e:
 if brand_tweets_df.isnull().values.any():
     brand_tweets_df = brand_tweets_df.dropna()
 
-brand_tweets_df['likes'] = pd.to_numeric(brand_tweets_df['likes'], errors='coerce')
-brand_tweets_df = brand_tweets_df.dropna(subset=['likes'])
-brand_tweets_df = brand_tweets_df[brand_tweets_df['likes'] >= 1]
+brand_tweets_df['likes'] = pd.to_numeric(brand_tweets_df['likes'], errors='coerce') # Turns 'likes' column to numeric type
 
 def analyze_brand_tweets():
-    # Ensure 'text' column exists
-    if 'text' not in brand_tweets_df.columns:
-        print("Error: 'text' column not found in the CSV file. Please ensure your CSV has a 'text' column.")
-        return
-
+    
     # Preprocess the text data
     port_stem_new = PorterStemmer()
 
