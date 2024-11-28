@@ -46,10 +46,14 @@ except Exception as e:
 if brand_tweets_df.isnull().values.any():
     brand_tweets_df = brand_tweets_df.dropna()
 
-brand_tweets_df['likes'] = pd.to_numeric(brand_tweets_df['likes'], errors='coerce') # Turns 'likes' column to numeric type
+brand_tweets_df['likes'] = pd.to_numeric(brand_tweets_df['likes']) # Turns 'likes' column to numeric type (instead of string)
 
 def analyze_brand_tweets():
-    
+    # Ensure 'text' column exists (adjust if column name is different)
+    if 'text' not in brand_tweets_df.columns:
+        print("Error: 'text' column not found in the CSV file. Please ensure your CSV has a 'text' column.")
+        return
+
     # Preprocess the text data
     port_stem_new = PorterStemmer()
 
@@ -67,12 +71,14 @@ def analyze_brand_tweets():
     # Vectorize the tweets using the same vectorizer used during training
     X_brand_tweets = vectorizer.transform(brand_tweets_df['stemmed_content'].values)
 
-    # Scale the feature matrix by the 'likes' column
-    likes_weights = brand_tweets_df['likes'].values
-    X_brand_tweets_weighted = X_brand_tweets.multiply(likes_weights[:, np.newaxis])
+
+    likes_weights = brand_tweets_df['likes'].values # Get the likes column as array
+    converted_likes_weights = likes_weights[:, np.newaxis] # np.newaxis adds a new axis to the array, turning it from 1D to a 2D array (an array of arrays). This is required in order to use the .multiply function
+    X_brand_tweets_weighted = X_brand_tweets.multiply(converted_likes_weights) # For every vectorized tweet the corresponding likes value is multiplied, giving it more weight/ importance
+    
 
     # Predict sentiments for brand tweets
-    predictions = loaded_model_v2.predict(X_brand_tweets_weighted)
+    predictions = loaded_model_v2.predict(X_brand_tweets_weighted) # Load the new weighted tweets into the model
     brand_tweets_df['sentiment'] = predictions
     print(predictions)
 
