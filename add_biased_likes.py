@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-file_path = './no_likes_tweets.csv'  
+file_path = './no_likes_Tweets.csv'  
 df = pd.read_csv(file_path)
 
 # Define scales for different sentiments
