@@ -115,5 +115,12 @@ def analyze_brand_tweets():
         print(brand_tweets_df.loc[brand_tweets_df['Predicted_Sentiment'] == 2, 'Text'].head(5).to_list())
     else:
         print("Skipping printing some neutral tweets.")
+    
+    print_some_neutral_tweets = input("\nDo you want to print some high liked tweets? (yes/no): ").lower()
+    if print_some_neutral_tweets == 'yes':
+        print("Some High Liked Tweets:")
+        print(brand_tweets_df.loc[brand_tweets_df["likes"].nlargest(5).index]) # locates row of tweets with top 5 highest amounts of likes
+    else:
+        print("Skipping printing some high liked.")
 
 analyze_brand_tweets()
